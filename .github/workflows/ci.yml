@@ -38,7 +38,7 @@ jobs:
         run: pytest tests/ -v --tb=short
 
       - name: Security audit (pip-audit)
-        run: pip-audit --requirement <(pip freeze) --ignore-vuln GHSA-r9dj-hf24-4xgm
+        run: pip-audit --skip-editable --ignore-vuln GHSA-r9dj-hf24-4xgm
 
   e2e:
     name: E2E smoke test
