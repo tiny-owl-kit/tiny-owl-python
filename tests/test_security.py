@@ -1,10 +1,7 @@
 """Tests for HMAC signing, canonical JSON, and the shared parity vector."""
 
-import hashlib
-import hmac
 import json
-
-import pytest
+import unittest.mock as mock
 
 from tinyowl.security import (
     build_signable_payload,
@@ -14,8 +11,6 @@ from tinyowl.security import (
     js_iso_timestamp,
     sign_payload,
 )
-from tinyowl.trace import TRACE_ID_RE
-
 
 # ---------------------------------------------------------------------------
 # Shared HMAC parity test vector
@@ -29,7 +24,7 @@ PARITY_CONTEXT = {"order_id": "ORD-9", "amount": 49.99}
 PARITY_TRACE_ID = "req-abc-123"
 PARITY_TIMESTAMP = "2026-08-19T10:20:30.000Z"
 PARITY_NONCE = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
-PARITY_SECRET = "super-secret-project-key-for-testing"
+PARITY_SECRET = "super-secret-project-key-for-testing"  # noqa: S105
 
 # Verified against Node.js:
 #   node -e "
@@ -200,7 +195,6 @@ class TestCreateSecureHeaders:
 
     def test_signature_differs_with_and_without_trace_id(self) -> None:
         # pin timestamp and nonce to isolate traceId impact
-        import unittest.mock as mock
         with mock.patch("tinyowl.security.js_iso_timestamp", return_value=PARITY_TIMESTAMP), \
              mock.patch("tinyowl.security.generate_nonce", return_value=PARITY_NONCE):
             h_with = create_secure_headers("msg", "info", {}, PARITY_SECRET, trace_id="tr")

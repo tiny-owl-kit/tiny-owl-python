@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
-from .errors import TinyOwlAuthError, TinyOwlError, TinyOwlNetworkError, TinyOwlServerError, TinyOwlTimeoutError
+from .errors import (
+    TinyOwlAuthError,
+    TinyOwlError,
+    TinyOwlNetworkError,
+    TinyOwlServerError,
+    TinyOwlTimeoutError,
+)
 
 logger = logging.getLogger(__name__)
 
-_LOCALHOST_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+_LOCALHOST_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}  # noqa: S104
 
 
 def _warn_if_insecure(base_url: str) -> None:
@@ -27,10 +33,10 @@ def _warn_if_insecure(base_url: str) -> None:
 
 def send_event(
     base_url: str,
-    payload: Dict[str, Any],
-    headers: Dict[str, str],
+    payload: dict[str, Any],
+    headers: dict[str, str],
     timeout: float,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """POST *payload* to ``{base_url}/ingest`` and return the parsed JSON response.
 
     Raises:
@@ -64,11 +70,11 @@ def send_event(
         msg = body.get("message", response.text) if body else response.text
         raise TinyOwlError(f"HTTP {response.status_code}: {msg}")
 
-    result: Dict[str, Any] = response.json()
+    result: dict[str, Any] = response.json()
     return result
 
 
-def _try_json(response: requests.Response) -> Optional[Dict[str, Any]]:
+def _try_json(response: requests.Response) -> dict[str, Any] | None:
     try:
         return response.json()  # type: ignore[no-any-return]
     except Exception:

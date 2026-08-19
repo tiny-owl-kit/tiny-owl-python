@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 
 class TinyOwlError(Exception):
     """Base class for all TinyOwl SDK errors."""
@@ -28,7 +26,7 @@ class TinyOwlTimeoutError(TinyOwlError):
 class TinyOwlNetworkError(TinyOwlError):
     """Raised for connection-level failures (DNS, refused, etc.)."""
 
-    def __init__(self, message: str, cause: Optional[BaseException] = None) -> None:
+    def __init__(self, message: str, cause: BaseException | None = None) -> None:
         super().__init__(message)
         self.cause = cause
 

@@ -1,15 +1,14 @@
 """Tests for TinyOwl client: API, context precedence, traceId, getConfig."""
 
 import pytest
-import responses as resp_lib
 import responses
 
 from tinyowl import TinyOwl
-from tinyowl.errors import TinyOwlAuthError, TinyOwlValidationError
+from tinyowl.errors import TinyOwlValidationError
 
 INGEST_URL = "https://be.tiny-owl-kit.io/api/ingest"
 API_KEY = "test-api-key"
-SECRET = "test-project-secret"
+SECRET = "test-project-secret"  # noqa: S105
 
 
 def make_client(**kwargs: object) -> TinyOwl:

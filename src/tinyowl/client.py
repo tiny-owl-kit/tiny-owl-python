@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from .errors import TinyOwlValidationError
 from .security import create_secure_headers
@@ -42,9 +42,9 @@ class TinyOwl:
         base_url: str = _DEFAULT_BASE_URL,
         timeout: float = _DEFAULT_TIMEOUT,
         auto_trace_id: bool = True,
-        default_context: Optional[Dict[str, Any]] = None,
+        default_context: dict[str, Any] | None = None,
         # internal — used by with_context()
-        _instance_trace_id: Optional[str] = None,
+        _instance_trace_id: str | None = None,
     ) -> None:
         if not api_key:
             raise TinyOwlValidationError("api_key is required")
@@ -56,12 +56,12 @@ class TinyOwl:
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._auto_trace_id = auto_trace_id
-        self._default_context: Dict[str, Any] = dict(default_context or {})
+        self._default_context: dict[str, Any] = dict(default_context or {})
 
         _warn_if_insecure(self._base_url)
 
         if _instance_trace_id is not None:
-            self._instance_trace_id: Optional[str] = _instance_trace_id
+            self._instance_trace_id: str | None = _instance_trace_id
         else:
             self._instance_trace_id = new_trace_id() if auto_trace_id else None
 
@@ -72,24 +72,24 @@ class TinyOwl:
     def info(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Log an *info* severity event."""
         return self.log(message, severity="info", context=context)
 
     def warning(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Log a *warning* severity event."""
         return self.log(message, severity="warning", context=context)
 
     def error(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Log an *error* severity event."""
         return self.log(message, severity="error", context=context)
 
@@ -102,8 +102,8 @@ class TinyOwl:
         message: str,
         *,
         severity: Severity = "info",
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Send an event to TinyOwl.
 
         Args:
@@ -129,11 +129,11 @@ class TinyOwl:
             )
 
         call_context = dict(context or {})
-        merged_context: Dict[str, Any] = {**self._default_context, **call_context}
+        merged_context: dict[str, Any] = {**self._default_context, **call_context}
 
         # Resolve traceId: explicit in merged_context > instance traceId
         raw_trace_id = merged_context.pop("traceId", None)
-        resolved_trace_id: Optional[str] = None
+        resolved_trace_id: str | None = None
 
         if isinstance(raw_trace_id, str):
             if validate_trace_id(raw_trace_id):
@@ -148,7 +148,7 @@ class TinyOwl:
             resolved_trace_id = self._instance_trace_id
 
         # Build wire body
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "apiKey": self._api_key,
             "message": message,
             "severity": severity,
@@ -180,7 +180,7 @@ class TinyOwl:
     # Child scope
     # ------------------------------------------------------------------
 
-    def with_context(self, partial: Dict[str, Any]) -> "TinyOwl":
+    def with_context(self, partial: dict[str, Any]) -> TinyOwl:
         """Return a new child client with merged default context and a fresh traceId.
 
         The parent instance is never modified.  If *partial* contains a ``traceId``
@@ -188,7 +188,7 @@ class TinyOwl:
         a fresh UUID v4 is generated.
         """
         raw_trace_id = partial.get("traceId")
-        child_trace_id: Optional[str] = None
+        child_trace_id: str | None = None
 
         if isinstance(raw_trace_id, str):
             if validate_trace_id(raw_trace_id):
@@ -204,7 +204,7 @@ class TinyOwl:
             child_trace_id = new_trace_id()
 
         partial_without_trace = {k: v for k, v in partial.items() if k != "traceId"}
-        merged_default: Dict[str, Any] = {**self._default_context, **partial_without_trace}
+        merged_default: dict[str, Any] = {**self._default_context, **partial_without_trace}
 
         return TinyOwl(
             api_key=self._api_key,
@@ -220,9 +220,9 @@ class TinyOwl:
     # Introspection (no secrets leaked)
     # ------------------------------------------------------------------
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Return SDK configuration for debugging. Never exposes secrets or API keys."""
-        cfg: Dict[str, Any] = {
+        cfg: dict[str, Any] = {
             "base_url": self._base_url,
             "timeout": self._timeout,
             "auto_trace_id": self._auto_trace_id,

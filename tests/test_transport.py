@@ -1,16 +1,24 @@
 """Tests for HTTP transport: timeout, non-2xx errors, connection failures."""
 
+import unittest.mock as mock
+
 import pytest
+import requests as req_lib
 import responses
 
 from tinyowl import TinyOwl
-from tinyowl.errors import TinyOwlAuthError, TinyOwlNetworkError, TinyOwlServerError, TinyOwlTimeoutError
+from tinyowl.errors import (
+    TinyOwlAuthError,
+    TinyOwlNetworkError,
+    TinyOwlServerError,
+    TinyOwlTimeoutError,
+)
 
 INGEST_URL = "https://be.tiny-owl-kit.io/api/ingest"
 
 
 def make_client(**kwargs: object) -> TinyOwl:
-    return TinyOwl(api_key="key", project_secret="secret", **kwargs)  # type: ignore[arg-type]
+    return TinyOwl(api_key="key", project_secret="secret", **kwargs)  # type: ignore[arg-type]  # noqa: S106
 
 
 class TestTransportErrors:
@@ -48,15 +56,11 @@ class TestTransportErrors:
         assert result["data"]["hmacVerified"] is True
 
     def test_connection_error_raises_network_error(self) -> None:
-        import requests as req_lib
-        import unittest.mock as mock
         with mock.patch("requests.post", side_effect=req_lib.exceptions.ConnectionError("refused")):
             with pytest.raises(TinyOwlNetworkError):
                 make_client().info("msg")
 
     def test_timeout_raises_timeout_error(self) -> None:
-        import requests as req_lib
-        import unittest.mock as mock
         with mock.patch("requests.post", side_effect=req_lib.exceptions.Timeout()):
             with pytest.raises(TinyOwlTimeoutError):
                 make_client(timeout=0.001).info("msg")

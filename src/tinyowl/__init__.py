@@ -2,10 +2,10 @@
 
 from .client import TinyOwl
 from .errors import (
-    TinyOwlError,
     TinyOwlAuthError,
-    TinyOwlTimeoutError,
+    TinyOwlError,
     TinyOwlNetworkError,
+    TinyOwlTimeoutError,
     TinyOwlValidationError,
 )
 

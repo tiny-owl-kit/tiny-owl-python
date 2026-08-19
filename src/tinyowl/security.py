@@ -1,11 +1,13 @@
 """HMAC-SHA256 signing, nonce generation, and canonical JSON serialization."""
 
+from __future__ import annotations
+
 import hashlib
 import hmac
 import json
 import secrets
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 def generate_nonce() -> str:
@@ -37,17 +39,17 @@ def canonical_json(obj: Any) -> str:
 def build_signable_payload(
     message: str,
     severity: str,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     timestamp: str,
     nonce: str,
-    trace_id: Optional[str] = None,
-) -> Dict[str, Any]:
+    trace_id: str | None = None,
+) -> dict[str, Any]:
     """Build the ordered dict that is HMAC-signed.
 
     Key order is fixed: message → severity → context → [traceId] → timestamp → nonce.
     This must exactly match the order used by the backend and JS SDK.
     """
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "message": message,
         "severity": severity,
         "context": context,
@@ -59,7 +61,7 @@ def build_signable_payload(
     return payload
 
 
-def sign_payload(payload: Dict[str, Any], project_secret: str) -> str:
+def sign_payload(payload: dict[str, Any], project_secret: str) -> str:
     """HMAC-SHA256 over the canonical JSON of *payload*; returns lowercase hex."""
     data = canonical_json(payload).encode("utf-8")
     return hmac.new(project_secret.encode("utf-8"), data, hashlib.sha256).hexdigest()
@@ -68,10 +70,10 @@ def sign_payload(payload: Dict[str, Any], project_secret: str) -> str:
 def create_secure_headers(
     message: str,
     severity: str,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     project_secret: str,
-    trace_id: Optional[str] = None,
-) -> Dict[str, str]:
+    trace_id: str | None = None,
+) -> dict[str, str]:
     """Generate the three HMAC security headers required by the backend."""
     timestamp = js_iso_timestamp()
     nonce = generate_nonce()
