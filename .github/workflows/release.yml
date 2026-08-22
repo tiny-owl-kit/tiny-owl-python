@@ -19,8 +19,8 @@ on:
   workflow_dispatch: # allow manual retry
 
 permissions:
-  contents: write  # create + push git tag
-  id-token: write  # PyPI OIDC Trusted Publishing
+  contents: write # create + push git tag
+  id-token: write # PyPI OIDC Trusted Publishing
 
 concurrency:
   group: release-main
