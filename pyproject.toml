@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tinyowl-observability"
-version = "0.1.0"
+version = "0.1.1"
 description = "TinyOwl Python SDK - Lightweight observability and event logging with enterprise-grade HMAC security"
 readme = "README.md"
 license = { text = "MIT" }
@@ -59,7 +59,7 @@ select = ["E", "F", "I", "UP", "B", "S"]
 ignore = ["S101"]  # allow assert in tests
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 files = ["src/tinyowl"]
 
