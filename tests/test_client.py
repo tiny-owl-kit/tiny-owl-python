@@ -250,3 +250,36 @@ class TestWirePayload:
         assert "x-nonce" in req_headers
         assert len(req_headers["x-nonce"]) == 32
         assert len(req_headers["x-signature"]) == 64
+
+
+class TestServiceEnvironment:
+    @responses.activate
+    def test_service_and_environment_sent_top_level(self) -> None:
+        import json
+
+        responses.add(responses.POST, INGEST_URL, json={"success": True}, status=201)
+        make_client(service="checkout-api", environment="production").info("msg")
+        payload = json.loads(responses.calls[0].request.body)
+        assert payload["service"] == "checkout-api"
+        assert payload["environment"] == "production"
+        assert "service" not in payload["context"]
+
+    @responses.activate
+    def test_omitted_when_not_configured(self) -> None:
+        import json
+
+        responses.add(responses.POST, INGEST_URL, json={"success": True}, status=201)
+        make_client().info("msg")
+        payload = json.loads(responses.calls[0].request.body)
+        assert "service" not in payload
+        assert "environment" not in payload
+
+    @responses.activate
+    def test_propagated_through_with_context(self) -> None:
+        import json
+
+        responses.add(responses.POST, INGEST_URL, json={"success": True}, status=201)
+        make_client(service="api", environment="staging").with_context({"job": "x"}).info("msg")
+        payload = json.loads(responses.calls[0].request.body)
+        assert payload["service"] == "api"
+        assert payload["environment"] == "staging"

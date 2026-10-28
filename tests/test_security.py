@@ -46,6 +46,21 @@ PARITY_CANONICAL = (
 )
 PARITY_SIGNATURE = "cee771d25dcfb623fcefe37860dbac955fa10bf717e1de789cbbf2865a59b3e8"
 
+# v2 parity vector (service/environment). Do not change these constants.
+# Copied from the JS SDK (tests/security.test.ts) and used by PHP as well.
+PARITY_V2_SERVICE = "checkout-api"
+PARITY_V2_ENVIRONMENT = "production"
+PARITY_V2_CANONICAL = (
+    '{"message":"Payment processed","severity":"info",'
+    '"context":{"order_id":"ORD-9","amount":49.99},'
+    '"traceId":"req-abc-123",'
+    '"service":"checkout-api",'
+    '"environment":"production",'
+    '"timestamp":"2026-08-19T10:20:30.000Z",'
+    '"nonce":"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"}'
+)
+PARITY_V2_SIGNATURE = "55df60dfd253e50fe5357784b245bb9279d33ec06626eb555a6caceff49c02c4"
+
 
 class TestCanonicalJson:
     def test_compact_no_whitespace(self) -> None:
@@ -142,6 +157,34 @@ class TestBuildSignablePayload:
         p = build_signable_payload("m", "info", {}, "ts", "nn", "tr")
         keys = list(p.keys())
         assert keys.index("traceId") < keys.index("timestamp")
+
+    def test_service_and_environment_between_trace_id_and_timestamp(self) -> None:
+        p = build_signable_payload("m", "info", {}, "ts", "nn", "tr", "svc", "prod")
+        assert list(p.keys()) == [
+            "message", "severity", "context", "traceId", "service", "environment",
+            "timestamp", "nonce",
+        ]
+
+    def test_service_and_environment_omitted_when_none(self) -> None:
+        p = build_signable_payload("m", "info", {}, "ts", "nn", "tr")
+        assert "service" not in p
+        assert "environment" not in p
+
+
+class TestParityV2:
+    def test_canonical_json_matches_vector(self) -> None:
+        p = build_signable_payload(
+            PARITY_MESSAGE, PARITY_SEVERITY, PARITY_CONTEXT, PARITY_TIMESTAMP, PARITY_NONCE,
+            PARITY_TRACE_ID, PARITY_V2_SERVICE, PARITY_V2_ENVIRONMENT,
+        )
+        assert canonical_json(p) == PARITY_V2_CANONICAL
+
+    def test_signature_matches_vector(self) -> None:
+        p = build_signable_payload(
+            PARITY_MESSAGE, PARITY_SEVERITY, PARITY_CONTEXT, PARITY_TIMESTAMP, PARITY_NONCE,
+            PARITY_TRACE_ID, PARITY_V2_SERVICE, PARITY_V2_ENVIRONMENT,
+        )
+        assert sign_payload(p, PARITY_SECRET) == PARITY_V2_SIGNATURE
 
 
 class TestGenerateNonce:
