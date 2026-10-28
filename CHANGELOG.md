@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-10-28
+
+### Added
+
+- Optional `service` and `environment` constructor arguments (JS SDK parity). They are sent top-level with each event and included in the HMAC signature only when set. `with_context()` keeps them.
+
 ## [0.1.1] — 2026-08-22
 
 ### Changed

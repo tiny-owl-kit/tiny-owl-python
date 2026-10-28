@@ -38,6 +38,8 @@ client.error("Payment failed", {"order_id": "ORD-9", "reason": "declined"})
 | `timeout`         | `float` | `5.0`                                | HTTP request timeout in seconds.                   |
 | `auto_trace_id`   | `bool`  | `True`                               | Attach a stable UUID v4 trace ID to every event.  |
 | `default_context` | `dict`  | `{}`                                 | Key/value pairs merged into every log call.        |
+| `service`         | `str`   | `None`                               | Service name sent top-level and included in the HMAC signature when set. |
+| `environment`     | `str`   | `None`                               | Deployment environment (e.g. `"production"`), sent and signed when set. |
 
 ## Logging events
 

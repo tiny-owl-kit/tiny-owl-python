@@ -43,6 +43,8 @@ class TinyOwl:
         timeout: float = _DEFAULT_TIMEOUT,
         auto_trace_id: bool = True,
         default_context: dict[str, Any] | None = None,
+        service: str | None = None,
+        environment: str | None = None,
         # internal — used by with_context()
         _instance_trace_id: str | None = None,
     ) -> None:
@@ -57,6 +59,8 @@ class TinyOwl:
         self._timeout = timeout
         self._auto_trace_id = auto_trace_id
         self._default_context: dict[str, Any] = dict(default_context or {})
+        self._service = service or None
+        self._environment = environment or None
 
         _warn_if_insecure(self._base_url)
 
@@ -156,8 +160,12 @@ class TinyOwl:
         }
         if resolved_trace_id is not None:
             payload["traceId"] = resolved_trace_id
+        if self._service is not None:
+            payload["service"] = self._service
+        if self._environment is not None:
+            payload["environment"] = self._environment
 
-        # Build HMAC security headers (signs message/severity/context/[traceId])
+        # HMAC headers sign message, severity, context and the optional traceId/service/environment
         headers = {
             "Content-Type": "application/json",
             **create_secure_headers(
@@ -166,6 +174,8 @@ class TinyOwl:
                 context=merged_context,
                 project_secret=self._project_secret,
                 trace_id=resolved_trace_id,
+                service=self._service,
+                environment=self._environment,
             ),
         }
 
@@ -213,6 +223,8 @@ class TinyOwl:
             timeout=self._timeout,
             auto_trace_id=self._auto_trace_id,
             default_context=merged_default,
+            service=self._service,
+            environment=self._environment,
             _instance_trace_id=child_trace_id,
         )
 

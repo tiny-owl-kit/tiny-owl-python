@@ -43,11 +43,14 @@ def build_signable_payload(
     timestamp: str,
     nonce: str,
     trace_id: str | None = None,
+    service: str | None = None,
+    environment: str | None = None,
 ) -> dict[str, Any]:
     """Build the ordered dict that is HMAC-signed.
 
-    Key order is fixed: message → severity → context → [traceId] → timestamp → nonce.
-    This must exactly match the order used by the backend and JS SDK.
+    Key order is fixed: message → severity → context → [traceId] → [service] →
+    [environment] → timestamp → nonce. This must exactly match the order used by
+    the backend and JS SDK. Optional keys are included only when set.
     """
     payload: dict[str, Any] = {
         "message": message,
@@ -56,6 +59,10 @@ def build_signable_payload(
     }
     if trace_id is not None:
         payload["traceId"] = trace_id
+    if service is not None:
+        payload["service"] = service
+    if environment is not None:
+        payload["environment"] = environment
     payload["timestamp"] = timestamp
     payload["nonce"] = nonce
     return payload
@@ -73,11 +80,15 @@ def create_secure_headers(
     context: dict[str, Any],
     project_secret: str,
     trace_id: str | None = None,
+    service: str | None = None,
+    environment: str | None = None,
 ) -> dict[str, str]:
     """Generate the three HMAC security headers required by the backend."""
     timestamp = js_iso_timestamp()
     nonce = generate_nonce()
-    signable = build_signable_payload(message, severity, context, timestamp, nonce, trace_id)
+    signable = build_signable_payload(
+        message, severity, context, timestamp, nonce, trace_id, service, environment
+    )
     signature = sign_payload(signable, project_secret)
     return {
         "x-signature": signature,
