@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-11-02
+
+### Added
+
+- Framework middleware, shipped as optional extras:
+  - `TinyOwlASGIMiddleware` for FastAPI and Starlette (`pip install "tinyowl-observability[fastapi]"`).
+  - `TinyOwlFlask` extension for Flask (`pip install "tinyowl-observability[flask]"`).
+  - `TinyOwlDjangoMiddleware` for Django, configured with `TINYOWL_CLIENT` or `TINYOWL` in settings (`pip install "tinyowl-observability[django]"`).
+- Events are sent only for uncaught exceptions (`error`) and for responses with status ≥ 400 (`warning`, or `error` for 5xx). Successful requests are not logged.
+- Context fields: `method`, `endpoint` (route template, or path without query string), `routeTemplate` (when the framework exposes one), `statusCode`, and `durationMs`.
+- Request bodies, query strings, headers, and cookies are never sent. SDK failures are caught and do not affect the application.
+
 ## [0.2.0] — 2026-10-28
 
 ### Added

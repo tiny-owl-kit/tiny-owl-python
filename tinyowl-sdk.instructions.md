@@ -50,7 +50,7 @@ tests/
   test_transport.py — timeout, non-2xx errors, connection failures
 examples/
   basic.py
-  flask_django_fastapi.py
+  fastapi_app.py, flask_app.py, django_settings.py
 ```
 
 ---

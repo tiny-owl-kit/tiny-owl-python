@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tinyowl-observability"
-version = "0.2.0"
+version = "0.3.0"
 description = "TinyOwl Python SDK - Lightweight observability and event logging with enterprise-grade HMAC security"
 readme = "README.md"
 license = { text = "MIT" }
@@ -29,7 +29,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+fastapi = ["fastapi>=0.110"]
+flask = ["flask>=2.3"]
+django = ["django>=4.2"]
 dev = [
+    "fastapi>=0.110",
+    "flask>=2.3",
+    "django>=4.2",
+    "httpx>=0.27",
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "responses>=0.24",
@@ -62,6 +69,10 @@ ignore = ["S101"]  # allow assert in tests
 python_version = "3.10"
 strict = true
 files = ["src/tinyowl"]
+
+[[tool.mypy.overrides]]
+module = ["django.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
