@@ -132,6 +132,61 @@ Every request is signed with **HMAC-SHA256**:
 - `project_secret` is never logged or included in `get_config()`.
 - Plain-HTTP `base_url` over a non-localhost host emits a warning (OWASP A02).
 
+## Framework middleware
+
+Events are sent only for uncaught exceptions and for responses with status ≥ 400. Successful requests are not logged. Each event carries `method`, `endpoint` (route template, or path without query string), `routeTemplate` (when available), `statusCode`, and `durationMs`. Request bodies, query strings, headers, and cookies are never sent, and SDK errors never break the application.
+
+### FastAPI / Starlette
+
+```bash
+pip install "tinyowl-observability[fastapi]"
+```
+
+```python
+from fastapi import FastAPI
+from tinyowl import TinyOwl
+from tinyowl.integrations.asgi_middleware import TinyOwlASGIMiddleware
+
+app = FastAPI()
+app.add_middleware(TinyOwlASGIMiddleware, client=TinyOwl(api_key=..., project_secret=...))
+```
+
+See `examples/fastapi_app.py`.
+
+### Flask
+
+```bash
+pip install "tinyowl-observability[flask]"
+```
+
+```python
+from flask import Flask
+from tinyowl import TinyOwl
+from tinyowl.integrations.flask_middleware import TinyOwlFlask
+
+app = Flask(__name__)
+TinyOwlFlask(app, TinyOwl(api_key=..., project_secret=...))
+```
+
+See `examples/flask_app.py`.
+
+### Django
+
+```bash
+pip install "tinyowl-observability[django]"
+```
+
+```python
+# settings.py
+TINYOWL = {"api_key": "...", "project_secret": "..."}
+MIDDLEWARE = [
+    # ...
+    "tinyowl.integrations.django_middleware.TinyOwlDjangoMiddleware",
+]
+```
+
+Alternatively, set `TINYOWL_CLIENT` to an existing `TinyOwl` instance. See `examples/django_settings.py`.
+
 ## Requirements
 
 - Python 3.9+
